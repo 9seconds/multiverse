@@ -1,0 +1,21 @@
+language: python
+sudo: false
+cache: pip
+python: 3.5
+
+env:
+  - TOXENV=static
+  - TOXENV=metrics
+  - TOXENV=py26-test
+  - TOXENV=py27-test
+  - TOXENV=py33-test
+  - TOXENV=py34-test
+  - TOXENV=py35-test
+  - TOXENV=pypy-test
+
+install: pip install tox
+script: tox
+
+notifications:
+  email:
+    - nineseconds@yandex.ru
