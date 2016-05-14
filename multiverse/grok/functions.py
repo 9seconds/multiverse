@@ -9,7 +9,7 @@ import dateutil.parser
 
 
 GrokResult = collections.namedtuple(
-    "GrokResult", ["filename", "timestamp", "line"])
+    "GrokResult", ["timestamp", "filename", "line"])
 
 
 class Grok(object):
@@ -28,7 +28,7 @@ class Grok(object):
         timestamp = self.extract_timestamp(chunks)
         message = self.extract_message(chunks)
 
-        return GrokResult(filename, timestamp, message)
+        return GrokResult(timestamp, filename, message)
 
     def extract_filename(self, chunks):
         return ""
@@ -50,12 +50,10 @@ class Grok(object):
             return int(line)
 
         parsed = dateutil.parser.parse(line, fuzzy=True)
-
         if hasattr(parsed, "timestamp"):
             parsed = parsed.timestamp()
         else:
             parsed = time.mktime(parsed.timetuple()) + parsed.microsecond / 1e6
-
         parsed = int(round(parsed * 1000))
 
         return parsed

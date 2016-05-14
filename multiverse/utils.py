@@ -1,10 +1,77 @@
 # -*- coding: utf-8 -*-
 
 
+import copy
+import csv
+import logging
+import logging.config
+
 import pkg_resources
+import unicodecsv
 
 
-def get_plugin(group, name):
+LOG_NAMESPACE = "multiverse"
+
+
+LOG_CONFIG = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "debug": {
+            "format": "[%(levelname)s] %(name)30s:%(lineno)d :: %(message)s"
+        },
+        "simple": {
+            "format": "%(message)s"
+        },
+        "verbose": {
+            "format": "[%(levelname)s] %(message)s"
+        }
+    },
+    "handlers": {
+        "stderr": {
+            "level": "ERROR",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose"
+        }
+    },
+    "loggers": {
+        LOG_NAMESPACE: {
+            "handlers": ["stderr"],
+            "level": "DEBUG",
+            "propagate": True
+        }
+    }
+}
+
+
+def logger(namespace):
+    return logging.getLogger(LOG_NAMESPACE + "." + namespace)
+
+
+def configure_logging(debug=False):
+    config = copy.deepcopy(LOG_CONFIG)
+
+    for handler in config["handlers"].values():
+        handler["level"] = "DEBUG" if debug else "ERROR"
+        handler["formatter"] = "debug" if debug else "verbose"
+
+    logging.config.dictConfig(config)
+
+
+def all_plugins(group):
+    plugins = {}
+
     for plugin in pkg_resources.iter_entry_points(group):
-        if plugin.name == name:
-            return plugin.load()
+        plugins[plugin.name] = plugin
+
+    return plugins
+
+
+def make_csv_reader(filefp):
+    return unicodecsv.reader(filefp,
+                             lineterminator="\n", quoting=csv.QUOTE_NONNUMERIC)
+
+
+def make_csv_writer(filefp):
+    return unicodecsv.writer(filefp,
+                             lineterminator="\n", quoting=csv.QUOTE_NONNUMERIC)

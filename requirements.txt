@@ -1,3 +1,6 @@
+argparse; python_version == "2.6"
+unicodecsv != 0.14.0; python_version == "2.6"
+unicodecsv; python_version != "2.6"
 six
 sortedcontainers
 python-dateutil
