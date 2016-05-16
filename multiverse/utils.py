@@ -12,7 +12,6 @@ import unicodecsv
 
 LOG_NAMESPACE = "multiverse"
 
-
 LOG_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -44,6 +43,16 @@ LOG_CONFIG = {
 }
 
 
+csv.register_dialect(
+    LOG_NAMESPACE,
+    delimiter=",",
+    doublequote=True,
+    lineterminator="\n",
+    quotechar='"',
+    quoting=csv.QUOTE_ALL,
+    skipinitialspace=False)
+
+
 def logger(namespace):
     return logging.getLogger(LOG_NAMESPACE + "." + namespace)
 
@@ -68,10 +77,8 @@ def all_plugins(group):
 
 
 def make_csv_reader(filefp):
-    return unicodecsv.reader(filefp,
-                             lineterminator="\n", quoting=csv.QUOTE_NONNUMERIC)
+    return unicodecsv.reader(filefp, dialect=LOG_NAMESPACE)
 
 
 def make_csv_writer(filefp):
-    return unicodecsv.writer(filefp,
-                             lineterminator="\n", quoting=csv.QUOTE_NONNUMERIC)
+    return unicodecsv.writer(filefp, dialect=LOG_NAMESPACE)

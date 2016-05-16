@@ -17,9 +17,17 @@ class Grok(object):
     CONTROL_SEQUENCE_REGEXP = re.compile(r"(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]")
     # https://en.wikipedia.org/wiki/ANSI_escape_code#CSI_codes
 
-    def __init__(self, timestamp_columns=None, message_column=None):
-        self.timestamp_columns = timestamp_columns or []
-        self.message_column = message_column or 0
+    MESSAGE_COLUMN = 0
+    TIMESTAMP_COLUMNS = []
+
+    def __init__(self, message_column=None, timestamp_columns=None):
+        self.message_column = message_column
+        if self.message_column is None:
+            self.message_column = self.MESSAGE_COLUMN
+
+        self.timestamp_columns = timestamp_columns
+        if self.timestamp_columns is None:
+            self.timestamp_columns = self.TIMESTAMP_COLUMNS
 
     def recognize(self, line):
         chunks = self.CONTROL_SEQUENCE_REGEXP.sub("", line).strip().split()
@@ -59,10 +67,16 @@ class Grok(object):
         return parsed
 
 
+class NoneGrok(Grok):
+    pass
+
+
 class GrepGrok(Grok):
 
-    def __init__(self, timestamp_columns=None, message_column=None):
-        super(GrepGrok, self).__init__(timestamp_columns, 1)
+    MESSAGE_COLUMN = 1
+
+    def __init__(self, message_column=None, timestamp_columns=None):
+        super(GrepGrok, self).__init__(message_column, timestamp_columns)
 
     def extract_filename(self, chunks):
         return chunks[0].split(":", 1)[0]

@@ -32,7 +32,7 @@ def main():
     LOG.debug("Temporary filename is %s", get_last_filename())
 
     plugin = all_plugins[options.format].load()
-    grok = plugin(options.timestamp_columns)
+    grok = plugin(options.message_column, options.timestamp_columns)
 
     if options.repeat_last:
         return repeat_last()
@@ -77,7 +77,7 @@ def process_new(grok):
             if last_csvwriter:
                 last_csvwriter.writerow(result)
     except Exception as exc:
-        LOG.error("Cannot write result %s: %s", result, exc)
+        LOG.error("Cannot write result: %s", exc)
         return os.EX_SOFTWARE
     else:
         return os.EX_OK
@@ -89,14 +89,14 @@ def process_new(grok):
 def get_parser(plugins):
     parser = argparse.ArgumentParser(
         description=(
-            "%(prog)s converts output of your search utility to output,"
-            " recognizible by other mv* utilities. Basically all you need is"
-            " to pipe your grep/ack/agg outputs into mvgrok."))
+            "%(prog)s converts output of your search utility to output, "
+            "recognizible by other mv* utilities. Basically all you need is "
+            "to pipe your grep/ack/agg outputs into mvgrok."))
 
     parser.add_argument(
         "-f", "--format",
-        help="Format of output to grok. Default is grep.",
-        default="grep",
+        help="Format of output to grok. Default is 'none'.",
+        default="none",
         choices=sorted(plugins.keys()))
     parser.add_argument(
         "-c", "--timestamp-columns",
@@ -104,6 +104,11 @@ def get_parser(plugins):
         nargs="*",
         type=int,
         default=None)
+    parser.add_argument(
+        "-m", "--message-column",
+        help="Column message start at. ['-m':].",
+        default=None,
+        type=int)
     parser.add_argument(
         "-l", "--repeat-last",
         help="Output result of last command.",
